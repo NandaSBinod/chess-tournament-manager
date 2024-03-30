@@ -33,7 +33,7 @@ model Player {
 }
 
 model Tournament {
-  id          Int @id @default(autoincrement())
+  id          Int @default(autoincrement()) @id
   title       String?
   date_start  DateTime
   date_end    DateTime

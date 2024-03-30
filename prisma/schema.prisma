@@ -1,0 +1,81 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  seed    = "prisma/seed.js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int     @id @default(autoincrement())
+  phone       BigInt  @unique
+  last_name   String
+  first_name  String
+  user_type   String
+  player      Player?
+  tournaments Tournament[]      
+}
+
+model Player {
+  userid      Int @id
+  user        User @relation(fields: [userid], references: [id])
+  fideid      Int
+  fide_rating Int
+  birthdate   DateTime @db.Date
+  sex         String
+  federation  String
+  tournaments Players_Tournaments[] 
+}
+
+model Tournament {
+  id          Int @id @default(autoincrement())
+  title       String?
+  date_start  DateTime
+  date_end    DateTime
+  city        String
+  user        User @relation(fields: [admin_id], references: [id])
+  admin_id    Int // remove?
+  players     Players_Tournaments[]
+  rounds      Round[]
+}
+
+model Pairing_and_Result {
+  white_player_id   Int
+  black_player_id   Int
+  round_no          Int
+  winner            String
+  @@id([white_player_id, round_no])
+  tournament_id     Int
+  round             Round @relation(fields: [tournament_id, round_no], references: [tournament_id, round_no])
+}
+
+model Players_Tournaments { // bridge table
+  player_id             Int 
+  player                Player  @relation(fields: [player_id], references: [userid])
+  tournament_id         Int
+  tournament            Tournament @relation(fields: [tournament_id], references: [id])
+  tournament_player_id  Int
+  @@id([player_id, tournament_id])
+}
+
+model Round {
+  round_no              Int
+  datetime              DateTime
+  tournament            Tournament @relation(fields: [tournament_id], references: [id])
+  tournament_id         Int
+  @@id([tournament_id, round_no])
+  pairings_and_results  Pairing_and_Result[]
+}
+
+
+
+
+
+
+
+

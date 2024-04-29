@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { Button, ButtonGroup, Listgroup, Alert, Toast, Avatar, ListgroupItem, NumberInput, Modal } from 'flowbite-svelte';
+  import { Button, ButtonGroup, Listgroup, Alert, Toast, Avatar, ListgroupItem, NumberInput, Modal, A, Dropdown, DropdownItem } from 'flowbite-svelte';
   import { Datepicker } from 'flowbite-svelte';
   import { Drawer, CloseButton, Label, Input, Textarea, Select } from "flowbite-svelte";
-  import {CheckCircleSolid, ExclamationCircleSolid, InfoCircleSolid} from 'flowbite-svelte-icons'
+  import {ArrowRightOutline, CheckCircleSolid, ChevronDownOutline, ExclamationCircleSolid, InfoCircleSolid} from 'flowbite-svelte-icons'
   import { sineIn } from "svelte/easing";
   import type { PageData } from './$types';
   export let data: PageData;
@@ -13,13 +13,19 @@
 	let hiddenCreate = true;
 	let hiddenEdit = true;
 	let showDelete = false;
-	let hiddenDelete = true;
 	let editId = 0;
 	let deleteId = 0;
+	let selected:any;
 	let transitionParams = {
 	x: -320,
 	duration: 200,
 	easing: sineIn
+	};
+	let hidden7 = true;
+	let transitionParamsTop = {
+		y: -320,
+		duration: 200,
+		easing: sineIn
 	};
 	const handleCancelCreate = () => {
 	hiddenCreate = true;
@@ -29,7 +35,6 @@
 	};
 	const handleCancelDelete = () => {
 	showDelete = false;
-	hiddenDelete = true;
 	};
   type Tournament = { id: Number, 
 	title: any, 
@@ -39,15 +44,27 @@
   };
   let links: Array<Object> = [];
   data.tournaments.forEach((element: Tournament) => {
-	links.push({ name: element.title, href: `/tournament/${element.id}`, id: element.id})
+	links.push({ name: element.title, href: `/tournaments/${element.id}`, id: element.id})
   });
+  let selected_city: any;
+  let selected_num: any;
+  let player_ranges = [
+    { value: [0, 5], name: '0-5' },
+    { value: [6, 10], name: '6-10' },
+    { value: [11, 20], name: '11-20' },
+	{ value: [21, 50], name: '21-50' },
+	{ value: [51, Number.POSITIVE_INFINITY], name: '>50' }
+  ];
+  let cities = [
+    { value: 'West Lafayette', name: 'West Lafayette' },
+    { value: 'Indianapolis', name: 'Indianapolis' }
+  ];
 </script>
 
 <div class="flex flex-col justify-center h-screen p-80">
-	<div class="flex justify-end items-center p-4">
-		<div>
-			<Button on:click={() => (hiddenCreate = false)}>Create Tournament</Button>
-		</div>
+	<div class="flex justify-end items-center p-4 space-x-2">
+		<Button color="light" on:click={() => (hidden7 = false)}>Generate Report</Button>
+		<Button on:click={() => (hiddenCreate = false)}>Create Tournament</Button>
 	</div>
 	<Listgroup items={links} let:item class="w-full" >
 		<div class="flex">
@@ -56,7 +73,7 @@
 			</ListgroupItem>
 			<ButtonGroup>
 				<Button on:click={() => {hiddenEdit = false; editId = item.id}}>Edit</Button>
-				<Button on:click={() => {showDelete = true; hiddenDelete = false; deleteId = item.id}}>Delete</Button>
+				<Button on:click={() => {showDelete = true; deleteId = item.id}}>Delete</Button>
 			</ButtonGroup>
 		</div>
 	</Listgroup>  
@@ -194,6 +211,54 @@
 	</form>
 </Drawer>
 
+
+<Drawer placement="top" width="w-full" transitionType="fly" transitionParams={transitionParamsTop} bind:hidden={hidden7} id="sidebar7">
+	<div class="flex items-center">
+	  <h5 id="drawer-label" class="inline-flex items-center mb-4 text-base font-semibold text-gray-500 dark:text-gray-400">
+		<InfoCircleSolid class="w-5 h-5 me-2.5" /> Select Tournament Parameters
+	  </h5>
+	  <CloseButton on:click={() => (hidden7 = true)} class="mb-4 dark:text-white" />
+	</div>
+	<form action="../report" class="flex justify-around mx-10 py-10">
+		<div class="flex items-center">
+			<div>
+				<Label for="range_start" class="mx-4 my-1">Range Start</Label>
+				<Input required id="range_start" name="range_start" type="date"/>
+			</div>
+			<span class="mx-4 text-gray-500">to</span>
+			<div>
+				<Label for="range_end" class="mx-4 my-1">Range End</Label>
+				<Input required id="range_end" name="range_end" type="date"/>
+			</div>
+		</div>
+		<!-- <div class="flex justify-between">
+			<Input id="start_date" name="date_start" type="date" />
+			<Input id="start_date" name="date_start" type="date" />
+		</div> -->
+		<div>
+			<Label for="city" class="mx-4 py-0">City</Label>
+			<Select id="city" name="city" class="mt-2" items={cities} bind:value={selected}/>
+		</div>
+		<div>
+			<Label for="player_no" class="mx-4 py-0">Number of Players</Label>
+			<Select id="player_no" name="player_no" class="mt-2" items={player_ranges}/>
+		</div>
+		<div class="flex items-center">
+			<Button class="h-10" type="submit">Generate <ArrowRightOutline class="w-5 h-5 ms-2" /></Button>
+		</div>
+	</form>
+	
+	<div></div>
+	<!-- <p class="max-w-lg mb-6 text-sm text-gray-500 dark:text-gray-400">
+	Supercharge your hiring by taking advantage of our <A href="/" class="text-primary-600 underline dark:text-primary-500 hover:no-underline">limited-time sale</A> for Flowbite Docs + Job Board. Unlimited access to over 190K top-ranked candidates and the #1 design job board.
+	</p>
+	<Button color="light" href="/">Learn more</Button>
+	<Button href="/" class="px-4">Get access <ArrowRightOutline class="w-5 h-5 ms-2" /></Button>
+	 -->
+</Drawer>
+
+
+
 <Modal bind:open={showDelete} title="" autoclose={false} size="sm" class="w-full">
     <svg class="text-gray-400 dark:text-gray-500 w-11 h-11 mb-3.5 mx-auto" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
     <p class="mb-4 text-gray-500 dark:text-gray-300 text-center">Are you sure you want to delete this item?</p>
@@ -203,6 +268,7 @@
 		<Button type="submit" color="red">Yes, I'm sure</Button>
 	</form>
 </Modal>
+
 
 
 

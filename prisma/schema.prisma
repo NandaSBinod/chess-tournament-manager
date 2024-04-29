@@ -18,7 +18,7 @@ model User {
   first_name  String
   user_type   String
   player      Player?
-  tournaments Tournament[]      
+  tournaments Tournament[] // if admin     
 }
 
 model Player {
@@ -38,7 +38,7 @@ model Tournament {
   date_start  DateTime
   date_end    DateTime
   city        String
-  user        User @relation(fields: [admin_id], references: [id])
+  admin       User @relation(fields: [admin_id], references: [id])
   admin_id    Int // remove?
   players     Players_Tournaments[]
   rounds      Round[]
@@ -59,7 +59,6 @@ model Players_Tournaments { // bridge table
   player                Player  @relation(fields: [player_id], references: [userid])
   tournament_id         Int
   tournament            Tournament @relation(fields: [tournament_id], references: [id])
-  tournament_player_id  Int
   @@id([player_id, tournament_id])
 }
 
